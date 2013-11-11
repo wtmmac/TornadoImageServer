@@ -1,0 +1,34 @@
+#注：proxy_temp_path和proxy_cache_path指定的路径必须在同一分区
+proxy_temp_path   /data0/proxy_temp_dir;
+
+#设置Web缓存区名称为cache_one，内存缓存空间大小为200MB，1天没有被访问的内容自动清除，硬盘缓存空间大小为30GB。
+proxy_cache_path  /data0/proxy_cache_dir  levels=1:2   keys_zone=cache_one:200m inactive=1d max_size=30g;
+
+upstream backend_server {
+    server   127.0.0.1:8888 weight=1 max_fails=2 fail_timeout=30s;
+}
+
+server
+{
+    listen       80;
+    server_name  image.example.com;
+    index index.html index.htm;
+    root  /data0/htdocs/www; 
+
+    location /
+    {
+    #如果后端的服务器返回502、504、执行超时等错误，自动将请求转发到upstream负载均衡池中的另一台服务器，实现故障转移。
+    proxy_next_upstream http_502 http_504 error timeout invalid_header;
+    proxy_cache cache_one;
+    #对不同的HTTP状态码设置不同的缓存时间
+    proxy_cache_valid  200 304 12h;
+    #以域名、URI、参数组合成Web缓存的Key值，Nginx根据Key值哈希，存储缓存内容到二级缓存目录内
+    proxy_cache_key $host$uri$is_args$args;
+    proxy_set_header Host  $host;
+    proxy_set_header X-Forwarded-For  $remote_addr;
+    proxy_pass http://backend_server;
+    expires      1d;
+    }
+
+    access_log  off;
+}
