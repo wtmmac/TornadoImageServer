@@ -76,7 +76,7 @@ class StreamLocal(ImageHandler):
     """
     
     def handler(self, *args):
-        self.convert_image(os.path.join("upload", args[0]))
+        self.convert_image(os.path.join(os.path.dirname(__file__), "upload", args[0]))
 
 application = web.Application([
     ('/recent_flickr', FlickrExample),
