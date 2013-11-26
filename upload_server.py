@@ -15,7 +15,7 @@ class MainHandler(tornado.web.RequestHandler):
     """
     def get(self):
         timestamp = int(time.time()).__str__()
-        params = {"sign":hashlib.md5(secret_key + timestamp).hexdigest().upper(), "time":timestamp}
+        params = {"sign": hashlib.md5(secret_key + timestamp).hexdigest().upper(), "time": timestamp}
         self.render(os.path.join(APP_ROOT, 'index.html'), params=params)
   
 class UploadHandler(tornado.web.RequestHandler):
@@ -27,7 +27,7 @@ class UploadHandler(tornado.web.RequestHandler):
             self.write("sign error")
         elif self.request.files:  
             uploadFile = self.request.files['upload_image'][0]
-            fileName =  time.strftime("%H%M%S") + '%d' % datetime.datetime.now().microsecond + '.' + uploadFile["filename"].split('.')[-1].lower()
+            fileName = time.strftime("%H%M%S") + '%d' % datetime.datetime.now().microsecond + '.' + uploadFile["filename"].split('.')[-1].lower()
             uploadPath = time.strftime("%Y/%m/%d")
             uploadRealPath = os.path.join(APP_ROOT, "upload", uploadPath)
             try:
@@ -46,7 +46,7 @@ settings = {
 }
 
 application = tornado.web.Application([
-    (r'/',MainHandler),
+    (r'/', MainHandler),
     (r'/upload', UploadHandler)
 ], **settings)
 
